@@ -19,6 +19,10 @@ const TweetSchema = new Schema({
     required: true,
     max: 500,
   },
+  created_at: {
+    type: Number,
+    default: Date.now(),
+  },
 });
 
-export default model<Tweet>("Profile", TweetSchema);
+export default model<Tweet>("Tweet", TweetSchema);

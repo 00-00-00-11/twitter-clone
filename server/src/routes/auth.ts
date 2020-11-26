@@ -3,6 +3,7 @@ import { Response, Router } from "express";
 import { errorObj } from "../constants";
 import { useToken } from "../hooks";
 import { IRequest } from "../interfaces";
+import ProfileModel from "../models/Profile.model";
 import UserModel, { IUser } from "../models/User.model";
 import Logger from "../utils/Logger";
 
@@ -70,8 +71,13 @@ router.post("/register", async (req: IRequest, res: Response) => {
 
     const hash = hashSync(password, 15);
     const newUser: IUser = new UserModel({ username, password: hash });
+    const newProfile = new ProfileModel({
+      user_id: newUser._id,
+      display_name: username,
+    });
 
     await newUser.save();
+    await newProfile.save();
 
     const token = useToken({ _id: newUser._id }, expires / 1000);
     res.cookie("session", token, {
