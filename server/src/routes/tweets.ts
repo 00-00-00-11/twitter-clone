@@ -14,6 +14,25 @@ router.get("/", useAuth, async (req: IRequest, res: Response) => {
   return res.json({ tweets, status: "success" });
 });
 
+router.get("/:tweetId", useAuth, async (req: IRequest, res: Response) => {
+  const { tweetId } = req.params;
+
+  try {
+    const tweet = await TweetModel.findById(tweetId);
+
+    if (!tweet) {
+      return res.json(errorObj("Tweet was not found")).status(404);
+    }
+
+    return res.json({
+      status: "success",
+      tweet,
+    });
+  } catch (e) {
+    Logger.error("GET: tweet", e);
+  }
+});
+
 router.post("/", useAuth, async (req: IRequest, res: Response) => {
   const { body } = req.body;
 
@@ -37,7 +56,32 @@ router.post("/", useAuth, async (req: IRequest, res: Response) => {
     });
   } catch (e) {
     Logger.error("POST: tweets", e);
-    return res.json(errorObj("An error occurred"));
+    return res.json(errorObj("An error occurred")).status(500);
+  }
+});
+
+router.delete("/:tweetId", useAuth, async (req: IRequest, res: Response) => {
+  const { tweetId } = req.params;
+
+  try {
+    const tweet = await TweetModel.findById(tweetId);
+
+    if (!tweet) {
+      return res.json(errorObj("tweet was not found")).status(404);
+    }
+
+    if (tweet.user_id.toString() !== req.user?._id.toString()) {
+      return res.json(errorObj("Forbidden")).status(403);
+    }
+
+    await TweetModel.findByIdAndDelete(tweetId);
+
+    return res.json({
+      status: "success",
+    });
+  } catch (e) {
+    Logger.error("DELETE: tweets", e);
+    return res.json(errorObj("An error occurred")).status(500);
   }
 });
 

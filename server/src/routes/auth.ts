@@ -1,7 +1,7 @@
 import { compareSync, hashSync } from "bcryptjs";
 import { Response, Router } from "express";
 import { errorObj } from "../constants";
-import { useToken } from "../hooks";
+import { useAuth, useToken } from "../hooks";
 import { IRequest } from "../interfaces";
 import ProfileModel from "../models/Profile.model";
 import UserModel, { IUser } from "../models/User.model";
@@ -91,6 +91,19 @@ router.post("/register", async (req: IRequest, res: Response) => {
   } catch (e) {
     Logger.error("register", e);
     return res.json(errorObj("An error occurred")).status(500);
+  }
+});
+
+router.post("/profile", useAuth, async (req: IRequest, res: Response) => {
+  try {
+    const user = await UserModel.findById(req.user?._id).select({
+      password: 0,
+    });
+    const profile = await ProfileModel.findOne({ user_id: user?._id });
+
+    return res.json({ user, profile, status: "success" });
+  } catch (e) {
+    Logger.error("profile", e);
   }
 });
 
