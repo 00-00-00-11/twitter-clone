@@ -94,6 +94,23 @@ router.post("/register", async (req: IRequest, res: Response) => {
   }
 });
 
+router.post("/", useAuth, async (req: IRequest, res: Response) => {
+  try {
+    const user = await UserModel.findById(req.user?._id).select({
+      password: 0,
+    });
+
+    if (!user) {
+      return res.json(errorObj("User not found"));
+    }
+
+    return res.json({ status: "success", user });
+  } catch (e) {
+    Logger.error("auth", e);
+    return res.json(errorObj("An error occurred"));
+  }
+});
+
 router.post("/profile", useAuth, async (req: IRequest, res: Response) => {
   try {
     const user = await UserModel.findById(req.user?._id).select({

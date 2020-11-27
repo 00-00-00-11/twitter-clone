@@ -8,13 +8,12 @@ async function useAuth(
   req: IRequest,
   res: Response,
   next: NextFunction
-): Promise<void> {
+): Promise<any> {
   const token = req.cookies["session"];
   const secret = process.env.JWT_SECRET;
 
   if (!token) {
-    res.json(errorObj("invalid token")).status(401);
-    return;
+    return res.json(errorObj("invalid token")).status(401);
   }
 
   try {
@@ -22,16 +21,14 @@ async function useAuth(
     const user = await UserModel.findById(vToken._id).select({ password: 0 });
 
     if (!user) {
-      res.json(errorObj("user not found")).status(401);
-      return;
+      return res.json(errorObj("user not found")).status(401);
     }
 
     req.user = { _id: user._id };
 
     next();
   } catch {
-    res.json(errorObj("invalid token")).status(401);
-    return;
+    return res.json(errorObj("invalid token")).status(401);
   }
 }
 
